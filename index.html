@@ -440,3 +440,214 @@
       if (device.isIOS) {
         iosGuide.style.display = 'block';
         androidGuide.style.display = 'none';
+        arrow.style.display = 'flex';
+      } else {
+        iosGuide.style.display = 'none';
+        androidGuide.style.display = 'block';
+        arrow.style.display = 'none';
+      }
+
+      document.getElementById('guide-overlay').classList.add('active');
+    }
+
+    function closeGuide() {
+      document.getElementById('guide-overlay').classList.remove('active');
+    }
+
+    function updateInstallButton() {
+      const btn = document.getElementById('install-btn');
+      const badge = document.getElementById('device-badge');
+      if (!btn) return;
+
+      const device = detectDevice();
+
+      if (deferredInstallPrompt) {
+        btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg>홈 화면에 설치`;
+        if (badge) badge.textContent = '⚡ ONE-TAP INSTALL';
+      } else if (device.isIOS) {
+        btn.textContent = '앱 설치 가이드';
+        if (badge) badge.textContent = 'iOS SAFARI';
+      } else if (device.isAndroid) {
+        btn.textContent = '앱 설치 가이드';
+        if (badge) badge.textContent = 'ANDROID';
+      } else {
+        btn.textContent = '앱 설치 가이드';
+        if (badge) badge.textContent = 'DESKTOP';
+      }
+    }
+
+    function init() {
+      hideAllScreens();
+
+      const isStandalone = window.navigator.standalone === true ||
+                           window.matchMedia('(display-mode: standalone)').matches;
+
+      if (isStandalone) {
+        document.getElementById('loading-ui').style.display = 'flex';
+        setTimeout(() => { window.location.href = APP_URL; }, 300);
+        return;
+      }
+
+      document.getElementById('install-ui').style.display = 'flex';
+      updateInstallButton();
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+      updateInstallButton();
+    });
+
+    window.addEventListener('appinstalled', () => {
+      deferredInstallPrompt = null;
+      updateInstallButton();
+      closeGuide();
+    });
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(err => {
+          console.warn('SW registration failed:', err);
+        });
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", init);
+  </script>
+</head>
+<body>
+
+  <!-- ① 설치 안내 화면 -->
+  <div id="install-ui" class="full-screen">
+    <img src="./icon.png?v=1" class="icon-preview" alt="HomeFlow">
+    <div class="brand-title">HomeFlow</div>
+    <div class="brand-sub">FAMILY TASKS</div>
+    <div class="device-badge" id="device-badge">DETECTING...</div>
+    <p class="description">
+      우리집 할일을 함께 관리해요.<br>
+      홈 화면에 설치하고 언제든 열어보세요.
+    </p>
+    <button class="guide-button" id="install-btn" onclick="triggerInstall()">
+      앱 설치
+    </button>
+  </div>
+
+  <!-- ② 로딩 화면 -->
+  <div id="loading-ui" class="full-screen">
+    <div class="loading-brand">
+      <div class="lb-ring r1"></div>
+      <div class="lb-ring r2"></div>
+      <div class="lb-mark">
+        <span class="lb-hf">HF</span>
+      </div>
+    </div>
+    <div class="loading-title">HomeFlow</div>
+    <div class="loading-label">LOADING TASKS</div>
+    <div class="loading-dots">
+      <span></span><span></span><span></span>
+    </div>
+    <div class="fallback-msg" onclick="window.location.href=APP_URL">
+      페이지가 멈췄다면 여기를 터치하세요
+    </div>
+  </div>
+
+  <!-- 설치 가이드 오버레이 -->
+  <div id="guide-overlay">
+    <button class="guide-close" onclick="closeGuide()">×</button>
+
+    <div class="guide-title">홈 화면에 추가</div>
+    <div class="guide-subtitle">INSTALL GUIDE</div>
+
+    <!-- iOS Safari 가이드 -->
+    <div id="guide-ios" style="display:none; width:100%; max-width:340px;">
+      <div class="guide-steps">
+        <div class="guide-step">
+          <div class="step-num">1</div>
+          <div class="step-icon">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 2L8 6l1.41 1.41L11 5.83V16h2V5.83l1.59 1.58L16 6l-4-4zM5 20V10h3V8H3v14h18V8h-5v2h3v10H5z"/>
+            </svg>
+          </div>
+          <div class="step-text">
+            하단의 <strong>공유</strong> 버튼을 탭하세요
+          </div>
+        </div>
+
+        <div class="guide-step">
+          <div class="step-num">2</div>
+          <div class="step-icon">
+            <svg viewBox="0 0 24 24">
+              <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 11h-4v4h-2v-4H7v-2h4V8h2v4h4v2z"/>
+            </svg>
+          </div>
+          <div class="step-text">
+            <strong>홈 화면에 추가</strong>를 선택하세요
+          </div>
+        </div>
+
+        <div class="guide-step">
+          <div class="step-num">3</div>
+          <div class="step-icon">
+            <svg viewBox="0 0 24 24">
+              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+            </svg>
+          </div>
+          <div class="step-text">
+            우측 상단 <strong>추가</strong>를 탭하면 완료
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 안드로이드 수동 가이드 -->
+    <div id="guide-android" style="display:none; width:100%; max-width:340px;">
+      <div class="guide-steps">
+        <div class="guide-step">
+          <div class="step-num">1</div>
+          <div class="step-icon">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+            </svg>
+          </div>
+          <div class="step-text">
+            우측 상단 <strong>⋮ 메뉴</strong>를 탭하세요
+          </div>
+        </div>
+
+        <div class="guide-step">
+          <div class="step-num">2</div>
+          <div class="step-icon">
+            <svg viewBox="0 0 24 24">
+              <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 11h-4v4h-2v-4H7v-2h4V8h2v4h4v2z"/>
+            </svg>
+          </div>
+          <div class="step-text">
+            <strong>홈 화면에 추가</strong> 또는 <strong>앱 설치</strong>를 선택하세요
+          </div>
+        </div>
+
+        <div class="guide-step">
+          <div class="step-num">3</div>
+          <div class="step-icon">
+            <svg viewBox="0 0 24 24">
+              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+            </svg>
+          </div>
+          <div class="step-text">
+            <strong>추가</strong> 버튼을 탭하면 완료
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- iOS 전용 하단 화살표 -->
+    <div class="guide-arrow" id="guide-arrow-ios" style="display:none;">
+      <span>공유 버튼</span>
+      <svg viewBox="0 0 24 24">
+        <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+      </svg>
+    </div>
+  </div>
+
+</body>
+</html>
