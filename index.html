@@ -19,7 +19,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#0d1117">
 
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Pinyon+Script&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <style>
     :root{
@@ -30,6 +30,7 @@
       --muted:#4A5568; --sub:#7A8494; --text:#E8F0F5; --text-dim:#BFC9D6;
       --mono:'IBM Plex Mono',monospace;
       --sans:'Noto Sans KR','Pretendard',-apple-system,'Malgun Gothic',sans-serif;
+      --script:'Pinyon Script',cursive;
     }
 
     *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
@@ -80,9 +81,8 @@
       100% { background-position: 200% 50%; }
     }
     .brand-title {
-      font-size: 30px;
-      font-weight: 800;
-      letter-spacing: -0.8px;
+      font-family: var(--script);
+      font-size: 44px;
       line-height: 1.1;
       margin-bottom: 6px;
       background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent), var(--accent2));
@@ -346,9 +346,8 @@
     }
 
     .loading-title {
-      font-size: 22px;
-      font-weight: 800;
-      letter-spacing: -0.5px;
+      font-family: var(--script);
+      font-size: 28px;
       color: var(--text);
       margin-bottom: 8px;
       line-height: 1.1;
